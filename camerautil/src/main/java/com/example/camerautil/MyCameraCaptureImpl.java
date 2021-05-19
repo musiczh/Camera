@@ -3,8 +3,8 @@ package com.example.camerautil;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
-import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -12,6 +12,7 @@ import android.os.Message;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.ErrorCallback;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -22,25 +23,28 @@ import java.io.IOException;
 
 public class MyCameraCaptureImpl implements MyCameraCapture {
 
+    public static int CAMERA_FACE_FRONT = 1;
+    public static int CAMERA_FACE_BACK = 0;
+
     private Context mContext;
     private int cameraNum = -1;
     private CameraHandler mHandler;
     private Camera mCamera;
-    private CameraInfo cameraInfo;
+    private CameraInfo mCameraInfo;
     private Parameters parameters;
     private MyCameraParam mCameraConfig;
     private ErrorCallback errorCallback;
     private boolean isPreviewing = false;
-    private boolean isOpen = false;
     private int degree = 0;
     private int cameraId = -1;
     private boolean isDestroy = false;
 
-    public MyCameraCaptureImpl(Context context){
+    public MyCameraCaptureImpl(Context context , MyCameraParam param){
         mContext = context;
         HandlerThread handlerThread = new  HandlerThread("MyCameraCaptureImpl");
         handlerThread.start();
         mHandler = new CameraHandler(handlerThread.getLooper());
+        mCameraConfig = param;
         errorCallback = new ErrorCallback() {
             @Override
             public void onError(int error, Camera camera) {
@@ -49,53 +53,28 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
         };
     }
 
-    // 设备是否拥有相机
+    // 检查设备是否拥有相机
     private boolean checkCamera(){
-        if (mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)){
-            return true;
-        }else{
-            return false;
-        }
-    }
-
-
-    @Override
-    public boolean isPreviewShow() {
-        return false;
+        return mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY);
     }
 
     @Override
     public void startCamera() {
-
-    }
-
-
-
-    public void openCamera(MyCameraParam param) {
-        mCameraConfig = param;
         sendMessage(1);
     }
 
-
     @Override
-    public void switchCamera() {
+    public void switchCamera(int facing) {
+        if (mCameraConfig.getFacing()!=facing){
+            mCameraConfig.setFacing(facing);
+        }
         sendMessage(4);
     }
 
-
     @Override
-    public void releaseCamera() {
-        sendMessage(3);
+    public void stopCamera() {
+        sendMessage(2);
     }
-
-
-
-
-    @Override
-    public void stopPreview() {
-
-    }
-
 
     @Override
     public void release() {
@@ -104,9 +83,13 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
 
     @Override
     public boolean isOpen(){
-        return isOpen;
+        return mCamera!=null;
     }
 
+    @Override
+    public int getFacing() {
+        return mCameraConfig.getFacing();
+    }
 
     @Override
     public void takePicture(Camera.ShutterCallback callBack) {
@@ -115,7 +98,7 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
 
     // 旋转90度
     public void changeOrientation(boolean isLeft){
-        if (!isOpen){
+        if (mCamera==null){
             onErrorCamera(5);
             return;
         }
@@ -124,7 +107,7 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
         }else{
             degree = (degree+90)%360;
         }
-        mCamera.setDisplayOrientation(degree);
+        mCamera.setDisplayOrientation(calcDisplayOrientation(degree));
     }
 
 
@@ -147,13 +130,13 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
         public void handleMessage(@NonNull Message msg) {
             switch (msg.what){
                 case 1 :
-                    openCameraReal(false);
+                    startCameraReal();
                     break;
                 case 2:
-                    // TODO
+                    stopCameraReal();
                     break;
                 case 3:
-                    releaseCameraReal();
+                    //
                     break;
                 case 4:
                     switchCameraReal();
@@ -166,10 +149,30 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
         }
     }
 
+    private void stopCameraReal(){
+        stopPreview();
+        releaseCamera();
+    }
+
+    private void startCameraReal(){
+        openCamera(false);
+        startPreview();
+    }
+
     private void releaseReal(){
-        releaseCameraReal();
+        releaseCamera();
         mHandler.getLooper().quit();
         isDestroy = true;
+    }
+
+    private void switchCameraReal(){
+        if (mCamera!=null){
+            openCamera(true);
+            startPreview();
+        }else{
+            onErrorCamera(5);
+        }
+
     }
 
     private void onErrorCamera(int errorCode){
@@ -188,42 +191,41 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
 
     }
 
-    private void switchCameraReal(){
-        if (isOpen){
-            changeFacing();
-            openCameraReal(true);
-            startPreviewReal();
-        }else{
-            onErrorCamera(5);
+    private void startPreview(){
+        MyPreview preview = mCameraConfig.getPreview();
+        if (!preview.isReady() || mCamera==null){
+            return;
         }
-
-    }
-
-    private void changeFacing(){
-        if (mCameraConfig.getFacing()==0){
-            mCameraConfig.setFacing(1);
-        }else{
-            mCameraConfig.setFacing(0);
+        if (isPreviewing){
+            stopPreview();
         }
-    }
-
-    private void startPreviewReal(){
-        if (isPreviewShow()){
-            stopPreviewReal();
-        }
-        SurfaceView view = mCameraConfig.getSurfaceView();
-        SurfaceHolder holder = view.getHolder();
-        try {
-            mCamera.setPreviewDisplay(holder);
-            mCamera.startPreview();
+        try{
+            if (preview.getClassType() == SurfaceView.class){
+                SurfaceView surfaceView = (SurfaceView)preview.getTarget();
+                mCamera.setPreviewDisplay(surfaceView.getHolder());
+            }else{
+                SurfaceTexture surfaceTexture = (SurfaceTexture)preview.getTarget();
+                mCamera.setPreviewTexture(surfaceTexture);
+            }
             isPreviewing = true;
-        } catch (IOException e) {
+            mCamera.startPreview();
+        }catch (IOException e){
             e.printStackTrace();
         }
-
     }
 
-    private void openCameraInner(){
+
+    private void openCamera(boolean ifSwitch){
+        // 相机已经启动且不是需要切换摄像头，不允许重复打开相机
+        if (!ifSwitch && mCamera!=null){
+            onErrorCamera(6);
+        }else{
+            startCameraInner();
+        }
+    }
+
+    private void startCameraInner(){
+        // 检查设备与权限
         if (!checkCamera() || -1 == (cameraNum = Camera.getNumberOfCameras())){
             onErrorCamera(0);
             return ;
@@ -233,42 +235,54 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
             return ;
         }
 
-        cameraInfo = new CameraInfo();
+        // 获取选择的相机信息
+        mCameraInfo = new CameraInfo();
         for(int i = 0; i < cameraNum; ++i) {
-            Camera.getCameraInfo(i, cameraInfo);
-            if (cameraInfo.facing == this.mCameraConfig.getFacing()) {
+            Camera.getCameraInfo(i, mCameraInfo);
+            if (mCameraInfo.facing == this.mCameraConfig.getFacing()) {
                 this.cameraId = i;
                 break;
             }
         }
 
+        // 如果相机正在使用则先释放相机
         if (mCamera!=null){
-            releaseCameraReal();
+            releaseCamera();
         }
 
+        // 打开相机
         mCamera = Camera.open(cameraId);
         parameters = mCamera.getParameters();
-        mCamera.setErrorCallback(errorCallback);
-        isOpen = true;
+        mCamera.setDisplayOrientation(calcDisplayOrientation(degree));
+
     }
 
-    private void openCameraReal(boolean ifSwitch){
-        if (!ifSwitch && isOpen){
-            onErrorCamera(6);
-        }else{
-            openCameraInner();
+    /**
+     * 计算相机需要旋转的角度，让预览图正向
+     * @param screenOrientationDegrees 屏幕旋转的角度
+     * @return 需要顺时针旋转的角度
+     */
+    private int calcDisplayOrientation(int screenOrientationDegrees) {
+        // 前置摄像头是镜像的
+        if (mCameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            return (360 - (mCameraInfo.orientation + screenOrientationDegrees) % 360) % 360;
+        } else {
+            return (mCameraInfo.orientation - screenOrientationDegrees + 360) % 360;
         }
     }
 
-    private void releaseCameraReal(){
+
+
+    private void releaseCamera(){
         if (isPreviewing){
-            stopPreviewReal();
+            stopPreview();
         }
         mCamera.release();
-        isOpen = false;
+        mCamera = null;
     }
 
-    private void stopPreviewReal(){
+
+    private void stopPreview(){
         mCamera.stopPreview();
         isPreviewing = false;
     }

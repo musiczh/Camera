@@ -3,10 +3,6 @@ package com.example.camerautil;
 import android.hardware.Camera;
 
 public interface MyCameraCapture {
-    /**
-     * 是否正在预览中
-     */
-    boolean isPreviewShow();
 
     /**
      * 根据用户参数打开摄像头,并开始预览
@@ -16,21 +12,17 @@ public interface MyCameraCapture {
 
     /**
      * 切换摄像头
+     * @param facing 切换的摄像头
      */
-    void switchCamera();
+    void switchCamera(int facing);
 
     /**
      * 释放相机资源，但是没有释放管理类内部的线程
      * 注意，在activity@onPause()方法中需要释放资源
      */
-    void releaseCamera();
+    void stopCamera();
 
 
-
-    /**
-     * 停止预览
-     */
-    void stopPreview();
 
     /**
      * 完全释放相机资源，关闭内部线程
@@ -55,6 +47,12 @@ public interface MyCameraCapture {
      * @return 相机是否已经打开
      */
     boolean isOpen();
+
+    /**
+     * 获取正在打开的相机id
+     * @return 正在使用的相机id
+     */
+    int getFacing();
 //
 //    void snapshot();
 //

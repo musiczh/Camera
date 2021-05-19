@@ -5,14 +5,14 @@ import android.view.SurfaceView;
 public class MyCameraParam {
 
     private int facing = 0;
-    private SurfaceView surfaceView;
+    private MyPreview mPreview;
 
-    public SurfaceView getSurfaceView() {
-        return surfaceView;
+    public MyPreview getPreview() {
+        return mPreview;
     }
 
-    public void setSurfaceView(SurfaceView surfaceView) {
-        this.surfaceView = surfaceView;
+    public void setPreview(MyPreview mPreview) {
+        this.mPreview = mPreview;
     }
 
     public int getFacing() {

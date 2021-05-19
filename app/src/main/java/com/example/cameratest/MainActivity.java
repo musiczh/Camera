@@ -21,6 +21,8 @@ import android.widget.FrameLayout;
 import com.example.camerautil.MyCameraCapture;
 import com.example.camerautil.MyCameraCaptureImpl;
 import com.example.camerautil.MyCameraParam;
+import com.example.camerautil.MyPreview;
+import com.example.camerautil.MyPreviewSurfaceView;
 import com.example.camerautil.MySurfaceView;
 import com.example.camerautil.PermissionUtil;
 
@@ -42,11 +44,13 @@ public class MainActivity extends AppCompatActivity {
 
         // 创建capture
         surfaceView = new SurfaceView(this);
+        MyPreview preview = new MyPreviewSurfaceView();
+        preview.setTarget(surfaceView);
         MyCameraParam param = new MyCameraParam();
         param.setFacing(0);
-        param.setSurfaceView(surfaceView);
+        param.setPreview(preview);
         mParam = param;
-        cameraCapture = new MyCameraCaptureImpl(this);
+        cameraCapture = new MyCameraCaptureImpl(this,param);
 
         final Button openButton = findViewById(R.id.button_open);
         final Button switchButton = findViewById(R.id.button_switch);
@@ -80,17 +84,21 @@ public class MainActivity extends AppCompatActivity {
 
     private void openCamera(){
         if (cameraCapture.isOpen()){
-            cameraCapture.releaseCamera();
+            cameraCapture.stopCamera();
             container.removeView(surfaceView);
         }else{
             container.addView(surfaceView);
-            cameraCapture.openCamera(mParam);
-            cameraCapture.startPreview();
+            cameraCapture.startCamera();
+
         }
     }
 
     private void switchCamera(){
-        cameraCapture.switchCamera();
+        if (cameraCapture.getFacing()==MyCameraCaptureImpl.CAMERA_FACE_FRONT){
+            cameraCapture.switchCamera(MyCameraCaptureImpl.CAMERA_FACE_BACK);
+        }else{
+            cameraCapture.switchCamera(MyCameraCaptureImpl.CAMERA_FACE_FRONT);
+        }
 
     }
 
