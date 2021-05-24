@@ -211,7 +211,7 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
     }
 
     private void postCameraNotOpenMsg(boolean switchCamera){
-        CameraErrorMsg msg = new CameraErrorMsg(MyCameraListener.CAMERA_NOT_OPEN,"相机尚未打开",getCameraMessage(false));
+        CameraErrorMsg msg = new CameraErrorMsg(MyCameraListener.CAMERA_NOT_OPEN,"相机尚未打开",getCameraMessage(switchCamera));
         sendMsgCallbackHandler(CODE_CAMERA_ERROR,msg);
     }
 
@@ -318,12 +318,10 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
             openCamera(true);
             startPreviewInner();
         }else{
-            postCameraNotOpenMsg(false);
+            postCameraNotOpenMsg(true);
         }
 
     }
-
-
 
     private void startPreviewInner(){
         MyPreview preview = mCameraConfig.getPreview();
