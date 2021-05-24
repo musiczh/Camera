@@ -167,7 +167,7 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
     }
 
     @Override
-    public List<String> getFlashMode() {
+    public List<String> getSupportFlashMode() {
         if (mCamera==null){
             postCameraNotOpenMsg(false);
             return null;
@@ -182,12 +182,22 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
         mCamera.setParameters(mCameraParams);
     }
 
+    @Override
+    public String getCurrentFlashMode() {
+        if (mCamera != null){
+            return mCameraParams.getFlashMode();
+        }else{
+            postCameraNotOpenMsg(false);
+            return null;
+        }
+    }
+
     private void configFlashModeInner(){
         if (mCamera == null){
             postCameraNotOpenMsg(false);
             return ;
         }
-        List<String> supportFlashMode = getFlashMode();
+        List<String> supportFlashMode = getSupportFlashMode();
         if (supportFlashMode != null && supportFlashMode.contains(mCameraConfig.getFlashMode())){
             mCameraParams.setFlashMode(mCameraConfig.getFlashMode());
         }

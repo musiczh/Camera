@@ -91,15 +91,24 @@ public interface MyCameraCapture {
 
     /**
      * 获取支持的闪光灯模式
+     * 字符串列表匹配见{@link android.hardware.Camera.Parameters}中以FLASH开头的常量
      * @return 返回支持的闪光灯模式列表
      */
-    List<String> getFlashMode();
+    List<String> getSupportFlashMode();
 
     /**
-     * 设置闪光灯模式；字符串必须来自 @getFlashMode()
+     * 设置闪光灯模式；字符串必须来自 {@link #getSupportFlashMode()}
      * @param flashMode 闪光灯模式
      */
     void setFlashMode(String flashMode);
+
+    /**
+     * 获取当前的闪光灯模式
+     * @return 闪光灯模式字符串
+     */
+    String getCurrentFlashMode();
+
+
 //
 //    void snapshot();
 //
