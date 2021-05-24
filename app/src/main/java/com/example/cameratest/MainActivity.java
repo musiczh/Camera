@@ -1,36 +1,32 @@
 package com.example.cameratest;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.hardware.Camera;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
+import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 
-import com.example.camerautil.MyCameraCapture;
+import com.example.camerautil.MyCameraCaptureListener;
+import com.example.camerautil.bean.CameraMessage;
+import com.example.camerautil.bean.PreviewFrameData;
+import com.example.camerautil.bean.PreviewMessage;
+import com.example.camerautil.interfaces.MyCameraCapture;
 import com.example.camerautil.MyCameraCaptureImpl;
-import com.example.camerautil.MyCameraParam;
-import com.example.camerautil.MyPreview;
-import com.example.camerautil.MyPreviewSurfaceView;
-import com.example.camerautil.MySurfaceView;
+import com.example.camerautil.bean.MyCameraConfig;
+import com.example.camerautil.preview.MyPreview;
+import com.example.camerautil.preview.MyPreviewSurfaceView;
 import com.example.camerautil.PermissionUtil;
 
 public class MainActivity extends AppCompatActivity {
     private MyCameraCapture cameraCapture;
     private SurfaceView surfaceView;
-    private MyCameraParam mParam;
+    private MyCameraConfig mParam;
     private FrameLayout container;
+    
+    private String TAG = "huan_mainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         surfaceView = new SurfaceView(this);
         MyPreview preview = new MyPreviewSurfaceView();
         preview.setTarget(surfaceView);
-        MyCameraParam param = new MyCameraParam();
+        MyCameraConfig param = new MyCameraConfig();
         param.setFacing(0);
         param.setPreview(preview);
         mParam = param;
@@ -88,7 +84,53 @@ public class MainActivity extends AppCompatActivity {
             container.removeView(surfaceView);
         }else{
             container.addView(surfaceView);
+            MyCameraCaptureListener listener = new MyCameraCaptureListener(){
+                @Override
+                public void onCameraOpen(CameraMessage cameraMessage) {
+                    Log.d(TAG, "onCameraOpen: ");
+                }
+
+                @Override
+                public void onCameraRelease() {
+                    super.onCameraRelease();
+                    Log.d(TAG, "onCameraRelease: ");
+                }
+
+                @Override
+                public void onCameraError(int code, String msg, CameraMessage cameraMessage) {
+                    super.onCameraError(code, msg, cameraMessage);
+                    Log.d(TAG, "onCameraError: ");
+                }
+
+                @Override
+                public void onPreviewFrameArrive(PreviewFrameData data) {
+                    super.onPreviewFrameArrive(data);
+                    Log.d(TAG, "onPreviewFrameArrive: ");
+                }
+
+                @Override
+                public void onPreviewStart(PreviewMessage msg) {
+                    super.onPreviewStart(msg);
+                    Log.d(TAG, "onPreviewStart: ");
+                }
+
+                @Override
+                public void onPreviewError(int code, String msg) {
+                    super.onPreviewError(code, msg);
+                    Log.d(TAG, "onPreviewError: ");
+                }
+
+                @Override
+                public void onPreviewStop() {
+                    super.onPreviewStop();
+                    Log.d(TAG, "onPreviewStop: ");
+                }
+            };
+            cameraCapture.setCameraListener(listener);
+            cameraCapture.setPreviewFrameListener(listener);
+            cameraCapture.setPreviewListener(listener);
             cameraCapture.startCamera();
+            
 
         }
     }

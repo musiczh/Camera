@@ -1,4 +1,4 @@
-package com.example.camerautil;
+package com.example.camerautil.preview;
 
 import android.graphics.SurfaceTexture;
 
@@ -16,11 +16,10 @@ public class MyPreviewSurfaceTexture extends MyPreview {
     }
 
     @Override
-    protected boolean setTargetReal(Object target) {
+    public void setTarget(Object target) {
         if (target instanceof SurfaceTexture){
             mSurfaceTexture = (SurfaceTexture)target;
-            return true;
         }
-        return false;
     }
+
 }

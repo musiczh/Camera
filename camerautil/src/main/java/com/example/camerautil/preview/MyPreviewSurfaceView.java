@@ -1,6 +1,6 @@
-package com.example.camerautil;
+package com.example.camerautil.preview;
 
-import android.graphics.SurfaceTexture;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 public class MyPreviewSurfaceView extends MyPreview{
@@ -8,20 +8,23 @@ public class MyPreviewSurfaceView extends MyPreview{
 
     @Override
     public Class getClassType() {
-        return SurfaceView.class;
+        return SurfaceHolder.class;
     }
 
     @Override
     public Object getTarget() {
-        return mSurfaceView;
+        if (mSurfaceView==null){
+            return null;
+        }
+        return mSurfaceView.getHolder();
     }
 
     @Override
-    protected boolean setTargetReal(Object target) {
+    public void setTarget(Object target) {
         if (target instanceof SurfaceView){
             mSurfaceView = (SurfaceView)target;
-            return true;
         }
-        return false;
     }
+
+
 }

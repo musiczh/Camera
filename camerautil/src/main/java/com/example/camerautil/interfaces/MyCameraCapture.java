@@ -1,6 +1,8 @@
-package com.example.camerautil;
+package com.example.camerautil.interfaces;
 
 import android.hardware.Camera;
+
+import java.util.List;
 
 public interface MyCameraCapture {
 
@@ -21,6 +23,12 @@ public interface MyCameraCapture {
      * 注意，在activity@onPause()方法中需要释放资源
      */
     void stopCamera();
+
+    /**
+     * 获取预览支持的尺寸
+     * @return
+     */
+    public List<Camera.Size> getSupportPreviewSize();
 
 
 
@@ -53,6 +61,24 @@ public interface MyCameraCapture {
      * @return 正在使用的相机id
      */
     int getFacing();
+
+    /**
+     * 设置预览监听器。在预览的开始、错误和结束时回调
+     * @param listener 预览监听器
+     */
+    void setPreviewListener(MyPreviewListener listener);
+
+    /**
+     * 设置预览帧监听器，预览的每一帧数据会通过这个监听器回调
+     * @param listener 预览帧监听器
+     */
+    void setPreviewFrameListener(MyPreviewFrameListener listener);
+
+    /**
+     * 相机监听器。相机打开、释放、错误时回调此监听器
+     * @param listener 相机监听器
+     */
+    void setCameraListener(MyCameraListener listener);
 //
 //    void snapshot();
 //
