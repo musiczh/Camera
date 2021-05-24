@@ -211,8 +211,12 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
     }
 
     @Override
-    public String getFocusMode() {
-        return null;
+    public String getCurrentFocusMode() {
+        if (mCamera==null){
+            postCameraNotOpenMsg(false);
+            return null;
+        }
+        return mCameraParams.getFocusMode();
     }
 
     private void configFocusMode(){

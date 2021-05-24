@@ -124,7 +124,7 @@ public interface MyCameraCapture {
      * 获取当前的对焦模式
      * @return 对焦模式
      */
-    String getFocusMode();
+    String getCurrentFocusMode();
 
 
 //
