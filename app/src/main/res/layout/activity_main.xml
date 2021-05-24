@@ -38,5 +38,13 @@
         app:layout_constraintLeft_toRightOf="@id/button_orientation"
         app:layout_constraintBottom_toBottomOf="@id/button_orientation"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/button_take"
+        android:text="拍照"
+        app:layout_constraintLeft_toRightOf="@id/button_switch"
+        app:layout_constraintBottom_toBottomOf="@id/button_orientation"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

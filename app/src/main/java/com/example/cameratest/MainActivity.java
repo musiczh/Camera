@@ -2,7 +2,11 @@ package com.example.cameratest;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.hardware.Camera;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
@@ -11,6 +15,7 @@ import android.widget.FrameLayout;
 
 import com.example.camerautil.MyCameraCaptureListenerImpl;
 import com.example.camerautil.bean.CameraMessage;
+import com.example.camerautil.bean.PictureData;
 import com.example.camerautil.bean.PreviewFrameData;
 import com.example.camerautil.bean.PreviewMessage;
 import com.example.camerautil.interfaces.MyCameraCapture;
@@ -20,11 +25,17 @@ import com.example.camerautil.preview.MyPreview;
 import com.example.camerautil.preview.MyPreviewSurfaceView;
 import com.example.camerautil.util.PermissionUtil;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
 public class MainActivity extends AppCompatActivity {
     private MyCameraCapture cameraCapture;
     private SurfaceView surfaceView;
     private MyCameraConfig mParam;
     private FrameLayout container;
+    private Handler mHandler;
     
     private String TAG = "huan_mainActivity";
 
@@ -36,6 +47,11 @@ public class MainActivity extends AppCompatActivity {
         if (!PermissionUtil.hasPermission("android.permission.CAMERA",this)){
             PermissionUtil.requirePermission(this,101,"android.permission.CAMERA");
         }
+        PermissionUtil.requirePermission(this,101,"android.permission.CAMERA","android.permission.WRITE_EXTERNAL_STORAGE");
+
+        HandlerThread handlerThread = new HandlerThread("mainactivity_background");
+        handlerThread.start();
+        mHandler = new Handler(handlerThread.getLooper());
 
 
         // 创建capture
@@ -51,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
         final Button openButton = findViewById(R.id.button_open);
         final Button switchButton = findViewById(R.id.button_switch);
         Button orientationButton = findViewById(R.id.button_orientation);
+        Button takeButton = findViewById(R.id.button_take);
         container = findViewById(R.id.framelayout);
 
         openButton.setOnClickListener(new View.OnClickListener() {
@@ -71,6 +88,18 @@ public class MainActivity extends AppCompatActivity {
                 changeOrientation();
             }
         });
+        takeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cameraCapture.takePicture(new Camera.ShutterCallback() {
+                    @Override
+                    public void onShutter() {
+                        Log.d(TAG, "onShutter: 拍照完成啦");
+                    }
+                });
+            }
+        });
+
 
 
 
@@ -125,10 +154,33 @@ public class MainActivity extends AppCompatActivity {
                     super.onPreviewStop();
                     Log.d(TAG, "onPreviewStop: ");
                 }
+
+                @Override
+                public void onPictureTaken(PictureData data) {
+                    File file = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                            "picture.jpg");
+                    OutputStream os = null;
+                    try {
+                        os = new FileOutputStream(file);
+                        os.write(data.getPictureData());
+                        os.close();
+                    } catch (IOException e) {
+                        Log.w(TAG, "Cannot write to " + file, e);
+                    } finally {
+                        if (os != null) {
+                            try {
+                                os.close();
+                            } catch (IOException e) {
+                                // Ignore
+                            }
+                        }
+                    }
+                }
             };
             cameraCapture.setCameraListener(listener);
             cameraCapture.setPreviewFrameListener(listener);
             cameraCapture.setPreviewListener(listener);
+            cameraCapture.setPictureListener(listener);
             cameraCapture.startCamera();
             
 

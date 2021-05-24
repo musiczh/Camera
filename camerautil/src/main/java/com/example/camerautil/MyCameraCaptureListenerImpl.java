@@ -1,13 +1,15 @@
 package com.example.camerautil;
 
 import com.example.camerautil.bean.CameraMessage;
+import com.example.camerautil.bean.PictureData;
 import com.example.camerautil.bean.PreviewFrameData;
 import com.example.camerautil.bean.PreviewMessage;
 import com.example.camerautil.interfaces.MyCameraListener;
+import com.example.camerautil.interfaces.MyPictureListener;
 import com.example.camerautil.interfaces.MyPreviewFrameListener;
 import com.example.camerautil.interfaces.MyPreviewListener;
 
-public class MyCameraCaptureListenerImpl implements MyCameraListener, MyPreviewListener, MyPreviewFrameListener {
+public class MyCameraCaptureListenerImpl implements MyCameraListener, MyPreviewListener, MyPreviewFrameListener, MyPictureListener {
 
     @Override
     public void onCameraOpen(CameraMessage cameraMessage) {
@@ -41,6 +43,11 @@ public class MyCameraCaptureListenerImpl implements MyCameraListener, MyPreviewL
 
     @Override
     public void onPreviewStop() {
+
+    }
+
+    @Override
+    public void onPictureTaken(PictureData data) {
 
     }
 }

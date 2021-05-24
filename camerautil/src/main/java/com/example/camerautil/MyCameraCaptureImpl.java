@@ -95,7 +95,7 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
                 if (mPictureListener!=null);{
-                    PictureData pictureData = new PictureData(mCameraParams.getPictureSize(),degree,data,mCameraInfo.facing);
+                    PictureData pictureData = new PictureData(mCameraParams.getPictureSize(),degree,data,mCameraConfig.getFacing());
                     mPictureListener.onPictureTaken(pictureData);
                 }
             }
@@ -103,7 +103,7 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
     }
 
     private CameraMessage getCameraMessage(boolean switchCamera){
-        return new CameraMessage(switchCamera,mCameraInfo.facing,mCameraInfo,mCamera);
+        return new CameraMessage(switchCamera,mCameraConfig.getFacing(),mCameraInfo,mCamera);
     }
 
     // 检查设备是否拥有相机
@@ -172,7 +172,7 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
             postCameraNotOpenMsg(false);
             return ;
         }
-        mCamera.takePicture(callBack,null,mPictureCallback);
+        mCamera.takePicture(callBack,null,null,mPictureCallback);
     }
 
     @Override
@@ -368,7 +368,7 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
                 public void onPreviewFrame(byte[] data, Camera camera) {
                     PreviewFrameData frameData = new PreviewFrameData();
                     frameData.setCamera(camera);
-                    frameData.setFacing(mCameraInfo.facing);
+                    frameData.setFacing(mCameraConfig.getFacing());
                     frameData.setData(data);
                     sendMsgCallbackHandler(CODE_PREVIEW_FRAME,frameData);
                     // 更新缓冲区下标，添加新的缓冲数组到队列中
@@ -413,6 +413,12 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
             return ;
         }
 
+        // 如果相机正在使用则先释放相机
+        if (mCamera!=null){
+            releaseCamera();
+            cameraId = -1;
+        }
+
         // 获取选择的相机信息
         mCameraInfo = new CameraInfo();
         for(int i = 0; i < cameraNum; ++i) {
@@ -422,10 +428,10 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
                 break;
             }
         }
-
-        // 如果相机正在使用则先释放相机
-        if (mCamera!=null){
-            releaseCamera();
+        if (cameraId == -1){
+            CameraErrorMsg msg = new CameraErrorMsg(MyCameraListener.CAMERA_NO_SUPPORT,"找不到ID= "+mCameraConfig.getFacing()+" 的摄像头",getCameraMessage(ifSwitch));
+            sendMsgCallbackHandler(CODE_CAMERA_ERROR,msg);
+            return ;
         }
 
         // 打开相机
@@ -438,7 +444,7 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
         configCameraParameters();
 
         // 监听回调
-        CameraMessage message = new CameraMessage(ifSwitch,mCameraInfo.facing,mCameraInfo,mCamera);
+        CameraMessage message = new CameraMessage(ifSwitch,mCameraConfig.getFacing(),mCameraInfo,mCamera);
         sendMsgCallbackHandler(CODE_CAMERA_OPEN,message);
 
     }
@@ -459,7 +465,7 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
      */
     private int calcDisplayOrientation(int screenOrientationDegrees) {
         // 前置摄像头是镜像的
-        if (mCameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+        if (mCameraConfig.getFacing() == Camera.CameraInfo.CAMERA_FACING_FRONT) {
             return (360 - (mCameraInfo.orientation + screenOrientationDegrees) % 360) % 360;
         } else {
             return (mCameraInfo.orientation - screenOrientationDegrees + 360) % 360;
