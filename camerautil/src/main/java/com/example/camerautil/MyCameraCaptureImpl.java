@@ -94,9 +94,12 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
         mPictureCallback = new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
-                if (mPictureListener!=null);{
+                if (mPictureListener!=null){
                     PictureData pictureData = new PictureData(mCameraParams.getPictureSize(),degree,data,mCameraConfig.getFacing());
                     mPictureListener.onPictureTaken(pictureData);
+                    if (mCameraConfig.isKeepPreviewAfterTakePicture()){
+                        startPreviewInner();
+                    }
                 }
             }
         };

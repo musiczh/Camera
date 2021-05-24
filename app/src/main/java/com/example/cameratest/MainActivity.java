@@ -12,6 +12,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import com.example.camerautil.MyCameraCaptureListenerImpl;
 import com.example.camerautil.bean.CameraMessage;
@@ -159,11 +160,15 @@ public class MainActivity extends AppCompatActivity {
                 public void onPictureTaken(PictureData data) {
                     File file = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),
                             "picture.jpg");
+                    if (!file.exists()){
+                        boolean b =file.mkdirs();
+                    }
                     OutputStream os = null;
                     try {
                         os = new FileOutputStream(file);
                         os.write(data.getPictureData());
                         os.close();
+                        Toast.makeText(MainActivity.this,"照片已经存储到 "+file.getAbsolutePath(),Toast.LENGTH_SHORT).show();
                     } catch (IOException e) {
                         Log.w(TAG, "Cannot write to " + file, e);
                     } finally {
