@@ -192,6 +192,40 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
         }
     }
 
+    @Override
+    public List<String> getSupportFocusMode() {
+        if (mCamera != null){
+            return mCameraParams.getSupportedFocusModes();
+        }else{
+            postCameraNotOpenMsg(false);
+            return null;
+        }
+    }
+
+    @Override
+    public void setFocusMode(String focusMode) {
+        mCameraConfig.setFocusMode(focusMode);
+        configFocusMode();
+        mCamera.setParameters(mCameraParams);
+
+    }
+
+    @Override
+    public String getFocusMode() {
+        return null;
+    }
+
+    private void configFocusMode(){
+        if (mCamera == null){
+            postCameraNotOpenMsg(false);
+            return ;
+        }
+        List<String> supportFocusMode = getSupportFocusMode();
+        if (supportFocusMode != null && supportFocusMode.contains(mCameraConfig.getFocusMode())){
+            mCameraParams.setFocusMode(mCameraConfig.getFocusMode());
+        }
+    }
+
     private void configFlashModeInner(){
         if (mCamera == null){
             postCameraNotOpenMsg(false);

@@ -7,11 +7,19 @@ public class MyCameraConfig {
     private int facing = 0;
     private boolean keepPreviewAfterTakePicture = true;
     private String flashMode;
+    private String focusMode;
     private MyPreview preview;
     // 预览帧的像素编码，决定了每个像素的大小；camera1默认是NV21，编号是17
     private int previewFormat = 17;
 
 
+    public String getFocusMode() {
+        return focusMode;
+    }
+
+    public void setFocusMode(String focusMode) {
+        this.focusMode = focusMode;
+    }
 
     public String getFlashMode() {
         return flashMode;

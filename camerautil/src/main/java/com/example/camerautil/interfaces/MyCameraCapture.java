@@ -108,6 +108,24 @@ public interface MyCameraCapture {
      */
     String getCurrentFlashMode();
 
+    /**
+     * 获取相机支持的对焦模式
+     * @return 支持的对焦模式
+     */
+    List<String> getSupportFocusMode();
+
+    /**
+     * 设置对焦模式
+     * @param focusMode 对焦模式
+     */
+    void setFocusMode(String focusMode);
+
+    /**
+     * 获取当前的对焦模式
+     * @return 对焦模式
+     */
+    String getFocusMode();
+
 
 //
 //    void snapshot();
