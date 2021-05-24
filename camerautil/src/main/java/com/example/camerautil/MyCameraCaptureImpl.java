@@ -71,7 +71,6 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
     private MyCameraListener mCameraListener;
     private MyPreviewListener mPreviewListener;
     private MyPictureListener mPictureListener;
-    private Camera.ShutterCallback mShutterCallback;
 
     public MyCameraCaptureImpl(Context context , MyCameraConfig config){
         mContext = context;
@@ -165,6 +164,33 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
     @Override
     public void setPictureListener(MyPictureListener pictureListener) {
         this.mPictureListener = pictureListener;
+    }
+
+    @Override
+    public List<String> getFlashMode() {
+        if (mCamera==null){
+            postCameraNotOpenMsg(false);
+            return null;
+        }
+        return mCameraParams.getSupportedFlashModes();
+    }
+
+    @Override
+    public void setFlashMode(String flashMode) {
+        mCameraConfig.setFlashMode(flashMode);
+        configFlashModeInner();
+        mCamera.setParameters(mCameraParams);
+    }
+
+    private void configFlashModeInner(){
+        if (mCamera == null){
+            postCameraNotOpenMsg(false);
+            return ;
+        }
+        List<String> supportFlashMode = getFlashMode();
+        if (supportFlashMode != null && supportFlashMode.contains(mCameraConfig.getFlashMode())){
+            mCameraParams.setFlashMode(mCameraConfig.getFlashMode());
+        }
     }
 
     @Override
@@ -457,7 +483,7 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
         if (format!=-1){
             mCameraParams.setPreviewFormat(format);
         }
-
+        configFlashModeInner();
         mCamera.setParameters(mCameraParams);
     }
 

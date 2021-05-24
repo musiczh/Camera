@@ -8,6 +8,8 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
@@ -30,6 +32,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     private MyCameraCapture cameraCapture;
@@ -100,9 +103,6 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         });
-
-
-
 
     }
 
@@ -205,5 +205,33 @@ public class MainActivity extends AppCompatActivity {
         cameraCapture.changeOrientation(false);
     }
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.flash:
+                showFlashMode();
+                break;
+            case R.id.scale:
+                showResolutionMode();
+                break;
+
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showFlashMode(){
+
+    }
+
+    private void showResolutionMode(){
+
+    }
 
 }

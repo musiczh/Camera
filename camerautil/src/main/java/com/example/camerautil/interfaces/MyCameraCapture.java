@@ -88,6 +88,18 @@ public interface MyCameraCapture {
      * @param pictureListener 照片回调
      */
     void setPictureListener(MyPictureListener pictureListener);
+
+    /**
+     * 获取支持的闪光灯模式
+     * @return 返回支持的闪光灯模式列表
+     */
+    List<String> getFlashMode();
+
+    /**
+     * 设置闪光灯模式；字符串必须来自 @getFlashMode()
+     * @param flashMode 闪光灯模式
+     */
+    void setFlashMode(String flashMode);
 //
 //    void snapshot();
 //
