@@ -4,6 +4,9 @@ import android.hardware.Camera;
 
 import java.util.List;
 
+/**
+ * 相机组件核心接口
+ */
 public interface MyCameraCapture {
 
     /**
@@ -79,6 +82,12 @@ public interface MyCameraCapture {
      * @param listener 相机监听器
      */
     void setCameraListener(MyCameraListener listener);
+
+    /**
+     * 设置拍照回调。当拍照完成之后，会回调这个方法把照片数据传递过来
+     * @param pictureListener 照片回调
+     */
+    void setPictureListener(MyPictureListener pictureListener);
 //
 //    void snapshot();
 //

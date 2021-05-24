@@ -7,7 +7,7 @@ import com.example.camerautil.interfaces.MyCameraListener;
 import com.example.camerautil.interfaces.MyPreviewFrameListener;
 import com.example.camerautil.interfaces.MyPreviewListener;
 
-public class MyCameraCaptureListener implements MyCameraListener, MyPreviewListener, MyPreviewFrameListener {
+public class MyCameraCaptureListenerImpl implements MyCameraListener, MyPreviewListener, MyPreviewFrameListener {
 
     @Override
     public void onCameraOpen(CameraMessage cameraMessage) {

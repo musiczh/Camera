@@ -9,7 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 
-import com.example.camerautil.MyCameraCaptureListener;
+import com.example.camerautil.MyCameraCaptureListenerImpl;
 import com.example.camerautil.bean.CameraMessage;
 import com.example.camerautil.bean.PreviewFrameData;
 import com.example.camerautil.bean.PreviewMessage;
@@ -18,7 +18,7 @@ import com.example.camerautil.MyCameraCaptureImpl;
 import com.example.camerautil.bean.MyCameraConfig;
 import com.example.camerautil.preview.MyPreview;
 import com.example.camerautil.preview.MyPreviewSurfaceView;
-import com.example.camerautil.PermissionUtil;
+import com.example.camerautil.util.PermissionUtil;
 
 public class MainActivity extends AppCompatActivity {
     private MyCameraCapture cameraCapture;
@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
             container.removeView(surfaceView);
         }else{
             container.addView(surfaceView);
-            MyCameraCaptureListener listener = new MyCameraCaptureListener(){
+            MyCameraCaptureListenerImpl listener = new MyCameraCaptureListenerImpl(){
                 @Override
                 public void onCameraOpen(CameraMessage cameraMessage) {
                     Log.d(TAG, "onCameraOpen: ");

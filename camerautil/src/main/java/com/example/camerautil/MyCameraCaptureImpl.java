@@ -20,13 +20,16 @@ import androidx.annotation.NonNull;
 import com.example.camerautil.bean.CameraErrorMsg;
 import com.example.camerautil.bean.CameraMessage;
 import com.example.camerautil.bean.MyCameraConfig;
+import com.example.camerautil.bean.PictureData;
 import com.example.camerautil.bean.PreviewFrameData;
 import com.example.camerautil.bean.PreviewMessage;
 import com.example.camerautil.interfaces.MyCameraCapture;
 import com.example.camerautil.interfaces.MyCameraListener;
+import com.example.camerautil.interfaces.MyPictureListener;
 import com.example.camerautil.interfaces.MyPreviewFrameListener;
 import com.example.camerautil.interfaces.MyPreviewListener;
 import com.example.camerautil.preview.MyPreview;
+import com.example.camerautil.util.PermissionUtil;
 
 import java.io.IOException;
 import java.util.List;
@@ -46,6 +49,7 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
     private Parameters mCameraParams;
     private MyCameraConfig mCameraConfig;
     private ErrorCallback mErrorCallback;
+    private Camera.PictureCallback mPictureCallback;
     private boolean isPreviewing = false;
     private int degree = 0;
     private int cameraId = -1;
@@ -62,9 +66,12 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
     private final int CODE_CAMERA_ERROR = 6;
     private final int CODE_CAMERA_RELEASE = 7;
 
+    // 用户设置的各种监听器
     private MyPreviewFrameListener mPreviewFrameListener;
     private MyCameraListener mCameraListener;
     private MyPreviewListener mPreviewListener;
+    private MyPictureListener mPictureListener;
+    private Camera.ShutterCallback mShutterCallback;
 
     public MyCameraCaptureImpl(Context context , MyCameraConfig config){
         mContext = context;
@@ -82,6 +89,15 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
             public void onError(int error, Camera camera) {
                 CameraErrorMsg cameraErrorMsg = new CameraErrorMsg(MyCameraListener.CAMERA_SYS_ERROR,"errorcode = "+error,getCameraMessage(false));
                 sendMsgCallbackHandler(CODE_CAMERA_ERROR,cameraErrorMsg);
+            }
+        };
+        mPictureCallback = new Camera.PictureCallback() {
+            @Override
+            public void onPictureTaken(byte[] data, Camera camera) {
+                if (mPictureListener!=null);{
+                    PictureData pictureData = new PictureData(mCameraParams.getPictureSize(),degree,data,mCameraInfo.facing);
+                    mPictureListener.onPictureTaken(pictureData);
+                }
             }
         };
     }
@@ -144,8 +160,19 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
     }
 
     @Override
-    public void takePicture(Camera.ShutterCallback callBack) {
+    public void setPictureListener(MyPictureListener pictureListener) {
+        this.mPictureListener = pictureListener;
+    }
 
+    @Override
+    public void takePicture(Camera.ShutterCallback callBack) {
+        // 和其他的相机请求方法不同，这个方法不能交给handler去处理
+        // 一般而言，当用户点击拍照按钮期望的是更快的响应速度
+        if (mCamera == null){
+            postCameraNotOpenMsg(false);
+            return ;
+        }
+        mCamera.takePicture(callBack,null,mPictureCallback);
     }
 
     @Override
@@ -156,8 +183,7 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
     // 旋转90度
     public void changeOrientation(boolean isLeft){
         if (mCamera==null){
-            CameraErrorMsg msg = new CameraErrorMsg(MyCameraListener.CAMERA_NOT_OPEN,"相机尚未打开",getCameraMessage(false));
-            sendMsgCallbackHandler(CODE_CAMERA_ERROR,msg);
+            postCameraNotOpenMsg(false);
             return;
         }
         if (isLeft){
@@ -182,6 +208,11 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
         msg.what = what;
         msg.obj = obj;
         mExecuteHandler.sendMessage(msg);
+    }
+
+    private void postCameraNotOpenMsg(boolean switchCamera){
+        CameraErrorMsg msg = new CameraErrorMsg(MyCameraListener.CAMERA_NOT_OPEN,"相机尚未打开",getCameraMessage(false));
+        sendMsgCallbackHandler(CODE_CAMERA_ERROR,msg);
     }
 
 
@@ -252,7 +283,6 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
                     stopCameraReal();
                     break;
                 case 3:
-                    //
                     break;
                 case 4:
                     switchCameraReal();
@@ -264,6 +294,8 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
             }
         }
     }
+
+
 
     private void stopCameraReal(){
         stopPreview();
@@ -286,8 +318,7 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
             openCamera(true);
             startPreviewInner();
         }else{
-            CameraErrorMsg msg = new CameraErrorMsg(MyCameraListener.CAMERA_NOT_OPEN,"相机尚未打开",getCameraMessage(false));
-            sendMsgCallbackHandler(CODE_CAMERA_ERROR,msg);
+            postCameraNotOpenMsg(false);
         }
 
     }

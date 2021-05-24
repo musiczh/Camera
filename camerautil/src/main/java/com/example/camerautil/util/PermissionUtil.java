@@ -1,4 +1,4 @@
-package com.example.camerautil;
+package com.example.camerautil.util;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
