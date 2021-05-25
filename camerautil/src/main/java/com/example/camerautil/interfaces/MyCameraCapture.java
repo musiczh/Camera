@@ -1,6 +1,9 @@
 package com.example.camerautil.interfaces;
 
 import android.hardware.Camera;
+import android.util.Size;
+
+import com.example.camerautil.bean.FocusAreaParam;
 
 import java.util.List;
 
@@ -29,9 +32,20 @@ public interface MyCameraCapture {
 
     /**
      * 获取预览支持的尺寸
-     * @return
+     * @return 返回支持的预览尺寸
      */
-    public List<Camera.Size> getSupportPreviewSize();
+    List<Camera.Size> getSupportPreviewSize();
+
+    /**
+     * 设置预览的尺寸
+     */
+    void setPreviewSize(Camera.Size size);
+
+    /**
+     * 获取当前预览尺寸
+     * @return 预览尺寸
+     */
+    Camera.Size getCurrentPreviewSize();
 
 
 
@@ -92,7 +106,7 @@ public interface MyCameraCapture {
     /**
      * 获取支持的闪光灯模式
      * 字符串列表匹配见{@link android.hardware.Camera.Parameters}中以FLASH开头的常量
-     * @return 返回支持的闪光灯模式列表
+     * @return 返回支持的闪光灯模式列表。返回@null表示出现错误
      */
     List<String> getSupportFlashMode();
 
@@ -104,13 +118,13 @@ public interface MyCameraCapture {
 
     /**
      * 获取当前的闪光灯模式
-     * @return 闪光灯模式字符串
+     * @return 闪光灯模式字符串。返回@null表示出现错误
      */
     String getCurrentFlashMode();
 
     /**
      * 获取相机支持的对焦模式
-     * @return 支持的对焦模式
+     * @return 支持的对焦模式。返回@null表示出现错误
      */
     List<String> getSupportFocusMode();
 
@@ -122,11 +136,21 @@ public interface MyCameraCapture {
 
     /**
      * 获取当前的对焦模式
-     * @return 对焦模式
+     * @return 对焦模式。返回@null表示出现错误
      */
     String getCurrentFocusMode();
 
+    /**
+     * 点击屏幕手动对焦
+     * @param param 采样的对焦区域以及采光区域
+     */
+    void tapFocus(FocusAreaParam param);
 
+    /**
+     * 设置缩放
+     * @param k 缩放的系数
+     */
+    void setZoom(float k);
 //
 //    void snapshot();
 //

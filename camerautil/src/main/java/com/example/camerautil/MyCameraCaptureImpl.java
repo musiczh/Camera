@@ -12,13 +12,12 @@ import android.os.Message;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.ErrorCallback;
+import android.util.Size;
 import android.view.SurfaceHolder;
-
-
 import androidx.annotation.NonNull;
-
 import com.example.camerautil.bean.CameraErrorMsg;
 import com.example.camerautil.bean.CameraMessage;
+import com.example.camerautil.bean.FocusAreaParam;
 import com.example.camerautil.bean.MyCameraConfig;
 import com.example.camerautil.bean.PictureData;
 import com.example.camerautil.bean.PreviewFrameData;
@@ -219,14 +218,31 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
         return mCameraParams.getFocusMode();
     }
 
+    @Override
+    public void tapFocus(FocusAreaParam param) {
+        // TODO
+    }
+
+    @Override
+    public void setZoom(float k) {
+        // TODO
+    }
+
+
     private void configFocusMode(){
         if (mCamera == null){
             postCameraNotOpenMsg(false);
             return ;
         }
         List<String> supportFocusMode = getSupportFocusMode();
-        if (supportFocusMode != null && supportFocusMode.contains(mCameraConfig.getFocusMode())){
+        if (supportFocusMode.contains(mCameraConfig.getFocusMode())){
             mCameraParams.setFocusMode(mCameraConfig.getFocusMode());
+        }else if (supportFocusMode.contains(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)){
+            mCameraParams.setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+        }else if (supportFocusMode.contains(Parameters.SCENE_MODE_AUTO)){
+            mCameraParams.setFocusMode(Parameters.FOCUS_MODE_AUTO);
+        }else{
+            mCameraParams.setFocusMode(supportFocusMode.get(0));
         }
     }
 
@@ -255,6 +271,41 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
     @Override
     public List<Camera.Size> getSupportPreviewSize(){
         return mCameraParams.getSupportedPreviewSizes();
+    }
+
+    @Override
+    public void setPreviewSize(Camera.Size size) {
+        if (mCamera == null){
+            postCameraNotOpenMsg(false);
+            return;
+        }
+        mCameraConfig.setPreviewSize(size);
+        configPreviewSize();
+        if (isPreviewing){
+            mCamera.stopPreview();
+        }
+        mCamera.setParameters(mCameraParams);
+        mCamera.startPreview();
+    }
+
+    @Override
+    public Camera.Size getCurrentPreviewSize() {
+        if (isPreviewing){
+            return mCameraParams.getPreviewSize();
+        }else{
+            return null;
+        }
+    }
+
+    private void configPreviewSize(){
+        if (mCamera == null){
+            postCameraNotOpenMsg(false);
+            return;
+        }
+        List<Camera.Size> sizes = mCameraParams.getSupportedPreviewSizes();
+        if (sizes.contains(mCameraConfig.getPreviewSize())){
+            mCameraParams.setPreviewSize(mCameraConfig.getPreviewSize().width,mCameraConfig.getPreviewSize().height);
+        }
     }
 
     // 旋转90度
@@ -532,6 +583,8 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
             mCameraParams.setPreviewFormat(format);
         }
         configFlashModeInner();
+        configFocusMode();
+        configPreviewSize();
         mCamera.setParameters(mCameraParams);
     }
 

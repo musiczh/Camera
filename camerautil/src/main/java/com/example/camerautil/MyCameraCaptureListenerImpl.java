@@ -9,6 +9,9 @@ import com.example.camerautil.interfaces.MyPictureListener;
 import com.example.camerautil.interfaces.MyPreviewFrameListener;
 import com.example.camerautil.interfaces.MyPreviewListener;
 
+/**
+ * 方便用户选择性实现接口
+ */
 public class MyCameraCaptureListenerImpl implements MyCameraListener, MyPreviewListener, MyPreviewFrameListener, MyPictureListener {
 
     @Override

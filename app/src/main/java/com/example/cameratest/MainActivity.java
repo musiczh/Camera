@@ -1,7 +1,9 @@
 package com.example.cameratest;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Environment;
@@ -32,6 +34,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
@@ -221,17 +224,79 @@ public class MainActivity extends AppCompatActivity {
             case R.id.scale:
                 showResolutionMode();
                 break;
+            case R.id.ratio:
+                showRadioMode();
+                break;
+
 
         }
         return super.onOptionsItemSelected(item);
     }
 
     private void showFlashMode(){
+        final List<String> flashMode = cameraCapture.getSupportFlashMode();
+        String current = cameraCapture.getCurrentFlashMode();
+        String[] strings = new String[flashMode.size()];
+        for (int i=0;i<flashMode.size();i++){
+            if (current.equals(flashMode.get(i))){
+                strings[i] = "* "+flashMode.get(i);
+            }else{
+                strings[i] = flashMode.get(i);
+            }
 
+        }
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("选择闪光灯模式").setItems(strings, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                cameraCapture.setFlashMode(flashMode.get(which));
+            }
+        }).create();
+        dialog.show();
+    }
+
+    private void showRadioMode(){
+        final List<Camera.Size> sizes = cameraCapture.getSupportPreviewSize();
+        Camera.Size currentsize = cameraCapture.getCurrentPreviewSize();
+        String[] strings = new String[sizes.size()];
+        StringBuilder sb = new StringBuilder();
+        for (int i=0;i<sizes.size();i++){
+            if (currentsize.equals(sizes.get(i))){
+                sb.append("* ");
+            }
+            Camera.Size size = sizes.get(i);
+            sb.append(size.width).append(":").append(size.height);
+            strings[i] = sb.toString();
+            sb.delete(0,sb.length());
+        }
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("选择比例模式").setItems(strings, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                cameraCapture.setPreviewSize(sizes.get(which));
+            }
+        }).create();
+        dialog.show();
     }
 
     private void showResolutionMode(){
-
+        final List<String> flashMode = cameraCapture.getSupportFocusMode();
+        String currentmode = cameraCapture.getCurrentFocusMode();
+        String[] strings = new String[flashMode.size()];
+        StringBuilder sb = new StringBuilder();
+        for (int i=0;i<flashMode.size();i++){
+            if (flashMode.get(i).equals(currentmode)){
+                sb.append("*");
+            }
+            sb.append(flashMode.get(i));
+            strings[i] = sb.toString();
+            sb.delete(0,sb.length());
+        }
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("选择聚焦模式").setItems(strings, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                cameraCapture.setFocusMode(flashMode.get(which));
+            }
+        }).create();
+        dialog.show();
     }
 
 }

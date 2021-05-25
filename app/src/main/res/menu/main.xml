@@ -6,8 +6,11 @@
         android:icon="@drawable/a2"
         app:showAsAction="never"/>
     <item android:id="@+id/scale"
-        android:title="比例"
+        android:title="聚焦模式"
         app:showAsAction="never"
+        android:icon="@drawable/a1"/>
+    <item android:id="@+id/ratio"
+        android:title="分辨率"
         android:icon="@drawable/a1"/>
 
 </menu>
