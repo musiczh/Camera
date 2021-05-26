@@ -12,7 +12,6 @@ import android.os.Message;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.ErrorCallback;
-import android.util.Size;
 import android.view.SurfaceHolder;
 import androidx.annotation.NonNull;
 import com.example.camerautil.bean.CameraErrorMsg;
@@ -55,6 +54,8 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
     private boolean isDestroy = false;
     private byte[][] mPreviewBuffer = new byte[PREVIEW_BUFFER_SIZE][];
     private int mBufferIndex = 0;
+    private boolean isFocusing = false;
+    private boolean isSnapshot = false;
 
     // 回调类型
     private final int CODE_PREVIEW_FRAME = 1;
@@ -219,13 +220,73 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
     }
 
     @Override
-    public void tapFocus(FocusAreaParam param) {
-        // TODO
+    public void tapFocus(final FocusAreaParam param) {
+        if (mCamera == null){
+            postCameraNotOpenMsg(false);
+            return;
+        }
+        List<String> focusMode = mCameraParams.getSupportedFocusModes();
+        if (!focusMode.contains(Parameters.FOCUS_MODE_AUTO)){
+            CameraMessage msg = new CameraMessage(false,mCameraConfig.getFacing(),mCameraInfo,mCamera);
+            sendMsgCallbackHandler(CODE_CAMERA_ERROR,new CameraErrorMsg(MyCameraListener.CAMERA_NOT_SUPPORT_AUTO_FOCUS,"该设备不支持自动对焦",msg));
+            return ;
+        }
+        if (isFocusing){
+            return;
+        }else{
+            isFocusing = true;
+        }
+
+        final String oldFocusMode = mCameraParams.getFocusMode();
+        int maxFocusArea = mCameraParams.getMaxNumFocusAreas();
+        int maxMeteringArea = mCameraParams.getMaxNumMeteringAreas();
+
+        if (param.getFocusAreaList().size()<=maxFocusArea){
+            mCameraParams.setFocusAreas(param.getFocusAreaList());
+        }
+        if (param.getMeteringAreaList().size()<=maxMeteringArea){
+            mCameraParams.setMeteringAreas(param.getMeteringAreaList());
+        }
+        mCamera.autoFocus(new Camera.AutoFocusCallback() {
+            @Override
+            public void onAutoFocus(boolean success, Camera camera) {
+                if (param.isKeepFocusMode()){
+                    mCameraParams.setFocusMode(oldFocusMode);
+                }
+                mCameraParams.setMeteringAreas(null);
+                mCameraParams.setFocusAreas(null);
+                mCamera.cancelAutoFocus();
+                mCamera.setParameters(mCameraParams);
+                isFocusing = false;
+            }
+        });
+
+
     }
 
     @Override
     public void setZoom(float k) {
-        // TODO
+        if (mCamera==null){
+            postCameraNotOpenMsg(false);
+            return;
+        }
+        if (k<0f){
+            k=0f;
+        }
+        if (k>1f){
+            k=1f;
+        }
+        float oldZoom = mCameraParams.getZoom();
+        if (Float.compare(oldZoom,k)!=0 && mCameraParams.isZoomSupported()){
+            int maxZoom = mCameraParams.getMaxZoom();
+            mCameraParams.setZoom((int)(maxZoom*k));
+            mCamera.setParameters(mCameraParams);
+        }
+    }
+
+    @Override
+    public void snapshot() {
+        isSnapshot = true;
     }
 
 
@@ -502,6 +563,12 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
                     // 更新缓冲区下标，添加新的缓冲数组到队列中
                     mBufferIndex = (mBufferIndex+1)%mPreviewBuffer.length;
                     camera.addCallbackBuffer(mPreviewBuffer[mBufferIndex]);
+
+                    if (isSnapshot){
+                        if (mPictureListener!=null){
+                            //
+                        }
+                    }
                 }
             });
         }

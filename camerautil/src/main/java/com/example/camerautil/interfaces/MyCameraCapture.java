@@ -147,51 +147,15 @@ public interface MyCameraCapture {
     void tapFocus(FocusAreaParam param);
 
     /**
-     * 设置缩放
+     * 设置图片的缩放。注意缩放仅仅影响拍照得到的图片而不影响预览
      * @param k 缩放的系数
      */
     void setZoom(float k);
-//
-//    void snapshot();
-//
-//    void toggleFlash();
-//
-//    boolean isFlashOn();
-//
-//    /** @deprecated */
-//    @Deprecated
-//    void autoFocus(Camera.AutoFocusCallback var1);
-//
-//    /** @deprecated */
-//    @Deprecated
-//    void cancelAutoFocus();
-//
-//    void setActivityOrientation(int var1);
 
-//    void setPreviewListener(APMPreviewListener var1);
-//
-//    void setPreviewFrameListener(APMPreviewFrameListener var1);
-//
-//    void setPictureResultListener(APMPictureResultListener var1);
-//
-//    void setCameraListener(APMCameraListener var1);
-//
-//    void onRequestPermissionsResult(int var1, String[] var2, int[] var3);
-//
-//    CameraParameters getCameraParameters();
-//
-//    /** @deprecated */
-//    @Deprecated
-//    void tapFocus(FocusParam var1);
-//
-//    void tapFocus(FocusArea var1);
+    /**
+     * 拍摄快照。和拍照不同的是，这个是从预览帧中获取一张并回调pictureCallback。
+     */
+    void snapshot();
 
-//    void setFlashMode(String var1);
-//
-//    String getFlashMode();
-//
-//    void setFocusMode(String var1);
-//
-//    void setZoom(float var1);
 
 }

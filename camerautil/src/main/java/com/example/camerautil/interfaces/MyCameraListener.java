@@ -8,6 +8,8 @@ public interface MyCameraListener {
     int CAMERA_NO_SUPPORT = 3;
     int CAMERA_SYS_ERROR = 4;
     int CAMERA_PERMISSION_DENY = 5;
+    int CAMERA_NOT_SUPPORT_AUTO_FOCUS = 6;
+
     void onCameraOpen(CameraMessage cameraMessage);
     void onCameraRelease();
     void onCameraError(int code, String msg, CameraMessage cameraMessage);

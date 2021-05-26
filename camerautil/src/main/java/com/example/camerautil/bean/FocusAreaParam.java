@@ -19,21 +19,21 @@ public class FocusAreaParam {
     /**
      * 对焦之后是否保持焦距
      */
-    private boolean isKeepFocus = false;
+    private boolean isKeepFocusMode = true;
 
 
-    public FocusAreaParam(List<Camera.Area> focusAreaList, List<Camera.Area> meteringAreaList, boolean isKeepFocus) {
+    public FocusAreaParam(List<Camera.Area> focusAreaList, List<Camera.Area> meteringAreaList, boolean isKeepFocusMode) {
         this.focusAreaList = focusAreaList;
         this.meteringAreaList = meteringAreaList;
-        this.isKeepFocus = isKeepFocus;
+        this.isKeepFocusMode = isKeepFocusMode;
     }
 
-    public boolean isKeepFocus() {
-        return isKeepFocus;
+    public boolean isKeepFocusMode() {
+        return isKeepFocusMode;
     }
 
-    public void setKeepFocus(boolean keepFocus) {
-        isKeepFocus = keepFocus;
+    public void setKeepFocusMode(boolean keepFocusMode) {
+        isKeepFocusMode = keepFocusMode;
     }
 
     public List<Camera.Area> getFocusAreaList() {

@@ -150,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onPreviewError(int code, String msg) {
                     super.onPreviewError(code, msg);
+                    //Toast.makeText(MainActivity.this,"previewcode="+code,Toast.LENGTH_SHORT).show();
                     Log.d(TAG, "onPreviewError: ");
                 }
 
