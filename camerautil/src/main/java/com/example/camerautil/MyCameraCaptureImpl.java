@@ -1,5 +1,6 @@
 package com.example.camerautil;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
@@ -12,6 +13,8 @@ import android.os.Message;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.ErrorCallback;
+import android.view.Display;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import androidx.annotation.NonNull;
 import com.example.camerautil.bean.CameraErrorMsg;
@@ -84,6 +87,19 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
         mExecuteHandler = new CallbackHandler(handlerThread2.getLooper());
 
         mCameraConfig = config;
+        if (context instanceof Activity ){
+            Activity activity = (Activity) context;
+            Display display = activity.getDisplay();
+            if (display != null){
+                int rotation = display.getRotation();
+                switch (rotation) {
+                    case Surface.ROTATION_0: degree = 0; break;
+                    case Surface.ROTATION_90: degree = 90; break;
+                    case Surface.ROTATION_180: degree = 180; break;
+                    case Surface.ROTATION_270: degree = 270; break;
+                }
+            }
+        }
         mErrorCallback = new ErrorCallback() {
             @Override
             public void onError(int error, Camera camera) {
@@ -516,7 +532,6 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
 
 
     private void stopCameraReal(){
-        stopPreview();
         releaseCamera();
     }
 
@@ -701,7 +716,9 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
         if (isPreviewing){
             stopPreview();
         }
-        mCamera.release();
+        if (mCamera!=null){
+            mCamera.release();
+        }
         sendMsgCallbackHandler(CODE_CAMERA_RELEASE,null);
         mCamera = null;
     }

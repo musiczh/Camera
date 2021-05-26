@@ -12,6 +12,7 @@ import android.os.HandlerThread;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
@@ -63,6 +64,14 @@ public class MainActivity extends AppCompatActivity {
 
         // 创建capture
         surfaceView = new SurfaceView(this);
+        surfaceView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                float x = event.getX();
+                float y = event.getY();
+                return false;
+            }
+        });
         MyPreview preview = new MyPreviewSurfaceView();
         preview.setTarget(surfaceView);
         MyCameraConfig param = new MyCameraConfig();
@@ -98,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
         takeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+               // cameraCapture.setZoom(0.5f);
                 cameraCapture.takePicture(new Camera.ShutterCallback() {
                     @Override
                     public void onShutter() {
@@ -164,9 +174,9 @@ public class MainActivity extends AppCompatActivity {
                 public void onPictureTaken(PictureData data) {
                     File file = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),
                             "picture.jpg");
-                    if (!file.exists()){
-                        boolean b =file.mkdirs();
-                    }
+//                    if (!file.exists()){
+//                        boolean b =file.mkdir();
+//                    }
                     OutputStream os = null;
                     try {
                         os = new FileOutputStream(file);

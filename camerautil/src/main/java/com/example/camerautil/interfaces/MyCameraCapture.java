@@ -148,7 +148,7 @@ public interface MyCameraCapture {
     void tapFocus(FocusAreaParam param);
 
     /**
-     * 设置图片的缩放。注意缩放仅仅影响拍照得到的图片而不影响预览
+     * 设置相机的缩放。也就我们在相机拉动放大缩小.缩放不影响preview的size，但是会影响预览的显示
      * @param k 缩放的系数
      */
     void setZoom(float k);
