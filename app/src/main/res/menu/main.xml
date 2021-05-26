@@ -12,5 +12,8 @@
     <item android:id="@+id/ratio"
         android:title="分辨率"
         android:icon="@drawable/a1"/>
+    <item android:id="@+id/snapshot"
+        android:title="快照"
+        android:icon="@drawable/a1"/>
 
 </menu>

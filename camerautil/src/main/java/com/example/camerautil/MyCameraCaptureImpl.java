@@ -65,6 +65,7 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
     private final int CODE_CAMERA_OPEN = 5;
     private final int CODE_CAMERA_ERROR = 6;
     private final int CODE_CAMERA_RELEASE = 7;
+    private final int CODE_PICTURE_TOKEN = 8;
 
     // 用户设置的各种监听器
     private MyPreviewFrameListener mPreviewFrameListener;
@@ -93,15 +94,20 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
         mPictureCallback = new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
-                if (mPictureListener!=null){
-                    PictureData pictureData = new PictureData(mCameraParams.getPictureSize(),degree,data,mCameraConfig.getFacing());
-                    mPictureListener.onPictureTaken(pictureData);
+                pictureCallback(data);
+                if (camera!=null){
+                    camera.cancelAutoFocus();
                     if (mCameraConfig.isKeepPreviewAfterTakePicture()){
-                        startPreviewInner();
+                        mCamera.startPreview();
                     }
                 }
             }
         };
+    }
+
+    private void pictureCallback(byte[] data){
+        PictureData pictureData = new PictureData(mCameraParams.getPictureSize(),degree,data,mCameraConfig.getFacing());
+        sendMsgCallbackHandler(CODE_PICTURE_TOKEN,pictureData);
     }
 
     private CameraMessage getCameraMessage(boolean switchCamera){
@@ -319,14 +325,32 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
     }
 
     @Override
-    public void takePicture(Camera.ShutterCallback callBack) {
+    public void takePicture(final Camera.ShutterCallback callBack, boolean isAutoFocus) {
         // 和其他的相机请求方法不同，这个方法不能交给handler去处理
         // 一般而言，当用户点击拍照按钮期望的是更快的响应速度
         if (mCamera == null){
             postCameraNotOpenMsg(false);
             return ;
         }
-        mCamera.takePicture(callBack,null,null,mPictureCallback);
+        // 如果设置了自动对焦参数则对焦之后再拍照
+        if (isAutoFocus && mCameraParams.getSupportedFocusModes().contains(Parameters.FOCUS_MODE_AUTO)){
+            final String oldFocusMode = mCameraParams.getFocusMode();
+            mCameraParams.setFocusMode(Parameters.FOCUS_MODE_AUTO);
+            mCamera.setParameters(mCameraParams);
+            mCamera.autoFocus(new Camera.AutoFocusCallback() {
+                @Override
+                public void onAutoFocus(boolean success, Camera camera) {
+                    if (camera!=null){
+                        camera.takePicture(callBack,null,null,mPictureCallback);
+                        camera.cancelAutoFocus();
+                        mCameraParams.setFocusMode(oldFocusMode);
+                        camera.setParameters(mCameraParams);
+                    }
+                }
+            });
+        }else{
+            mCamera.takePicture(callBack,null,null,mPictureCallback);
+        }
     }
 
     @Override
@@ -451,6 +475,11 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
                         mCameraListener.onCameraRelease();
                     }
                     break;
+                case CODE_PICTURE_TOKEN:
+                    if (mPictureListener!=null && msg.obj instanceof PictureData){
+                        mPictureListener.onPictureTaken((PictureData)msg.obj);
+                    }
+                    break;
                 default:
                     break;
             }
@@ -565,9 +594,8 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
                     camera.addCallbackBuffer(mPreviewBuffer[mBufferIndex]);
 
                     if (isSnapshot){
-                        if (mPictureListener!=null){
-                            //
-                        }
+                        pictureCallback(data);
+                        isSnapshot = false;
                     }
                 }
             });

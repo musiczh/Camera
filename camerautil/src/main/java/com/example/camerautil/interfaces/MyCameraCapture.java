@@ -57,9 +57,10 @@ public interface MyCameraCapture {
 
     /**
      * 拍照
-     * @param callBack 拍照回调，负责存储照片信息
+     * @param callBack 拍照完成之后通知回调，仅仅只有通知作用
+     * @param isAutoFocus 拍照时是否自动对焦
      */
-    void takePicture(Camera.ShutterCallback callBack);
+    void takePicture(Camera.ShutterCallback callBack,boolean isAutoFocus);
 
     /**
      * 改变相机方向

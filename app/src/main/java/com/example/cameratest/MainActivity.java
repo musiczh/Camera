@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onShutter() {
                         Log.d(TAG, "onShutter: 拍照完成啦");
                     }
-                });
+                },true);
             }
         });
 
@@ -227,6 +227,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.ratio:
                 showRadioMode();
+                break;
+            case R.id.snapshot:
+                cameraCapture.snapshot();
                 break;
 
 
