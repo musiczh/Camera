@@ -158,5 +158,11 @@ public interface MyCameraCapture {
      */
     void snapshot();
 
+    //------补充接口
+
+    void openCamera();
+
+    void startPreview();
+
 
 }

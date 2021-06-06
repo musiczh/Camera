@@ -13,9 +13,12 @@ import android.os.Message;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.ErrorCallback;
+import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
 import android.view.SurfaceHolder;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import com.example.camerautil.bean.CameraErrorMsg;
 import com.example.camerautil.bean.CameraMessage;
@@ -311,6 +314,16 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
         isSnapshot = true;
     }
 
+    @Override
+    public void openCamera() {
+
+    }
+
+    @Override
+    public void startPreview() {
+
+    }
+
 
     private void configFocusMode(){
         if (mCamera == null){
@@ -421,6 +434,8 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
             degree = (degree+90)%360;
         }
         mCamera.setDisplayOrientation(calcDisplayOrientation(degree));
+        Toast.makeText(mContext,"degree="+degree+" cameraInfo.orientation="+mCameraInfo.orientation,Toast.LENGTH_SHORT).show();
+        mCamera.setDisplayOrientation(degree);
     }
 
 
@@ -675,7 +690,7 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
         // 打开相机
         mCamera = Camera.open(cameraId);
         mCameraParams = mCamera.getParameters();
-        mCamera.setDisplayOrientation(calcDisplayOrientation(degree));
+        configDisplayOrientation();
         mCamera.setErrorCallback(mErrorCallback);
 
         // 根据用户的配置修改相机参数
@@ -686,6 +701,40 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
         sendMsgCallbackHandler(CODE_CAMERA_OPEN,message);
 
     }
+
+    private void configDisplayOrientation(){
+
+        if (mContext instanceof Activity){
+            Activity activity = (Activity) mContext;
+            Display display = activity.getDisplay();
+            if (display != null){
+                int rotation = display.getRotation();
+                switch (rotation) {
+                    case Surface.ROTATION_0: degree = 0; break;
+                    case Surface.ROTATION_90: degree = 90; break;
+                    case Surface.ROTATION_180: degree = 180; break;
+                    case Surface.ROTATION_270: degree = 270; break;
+                }
+            }
+        }else{
+            degree = 0;
+        }
+
+        int rotation = 0;
+        if (mCameraInfo.facing == 1) {
+            rotation = (mCameraInfo.orientation + degree) % 360;
+        } else {
+            int landscapeFlip = isLandscape(degree) ? 180 : 0;
+            rotation = (mCameraInfo.orientation + degree + landscapeFlip) % 360;
+        }
+
+        mCameraParams.setRotation(rotation);
+        mCamera.setDisplayOrientation(calcDisplayOrientation(degree));
+    }
+    private boolean isLandscape(int orientationDegrees) {
+        return orientationDegrees == 90 || orientationDegrees == 270;
+    }
+
 
     private void configCameraParameters(){
         int format = checkPreviewFormatSupport(mCameraConfig.getPreviewFormat());
@@ -704,9 +753,8 @@ public class MyCameraCaptureImpl implements MyCameraCapture {
      * @return 需要顺时针旋转的角度
      */
     private int calcDisplayOrientation(int screenOrientationDegrees) {
-        // 前置摄像头是镜像的
         if (mCameraConfig.getFacing() == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            return (360 - (mCameraInfo.orientation + screenOrientationDegrees) % 360) % 360;
+            return (360 - (mCameraInfo.orientation + screenOrientationDegrees) % 360)%360;
         } else {
             return (mCameraInfo.orientation - screenOrientationDegrees + 360) % 360;
         }

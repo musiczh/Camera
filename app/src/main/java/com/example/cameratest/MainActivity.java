@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private MyCameraConfig mParam;
     private FrameLayout container;
     private Handler mHandler;
-    
+
     private String TAG = "huan_mainActivity";
 
     @Override
@@ -74,9 +74,10 @@ public class MainActivity extends AppCompatActivity {
         });
         MyPreview preview = new MyPreviewSurfaceView();
         preview.setTarget(surfaceView);
-        MyCameraConfig param = new MyCameraConfig();
-        param.setFacing(0);
-        param.setPreview(preview);
+        MyCameraConfig.Builder builder = new MyCameraConfig.Builder()
+                .setFacing(0)
+                .setPreview(preview);
+        MyCameraConfig param =builder.build();
         mParam = param;
         cameraCapture = new MyCameraCaptureImpl(this,param);
 
@@ -148,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onPreviewFrameArrive(PreviewFrameData data) {
                     super.onPreviewFrameArrive(data);
-                    Log.d(TAG, "onPreviewFrameArrive: ");
+                    //Log.d(TAG, "onPreviewFrameArrive: ");
                 }
 
                 @Override
@@ -201,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
             cameraCapture.setPreviewListener(listener);
             cameraCapture.setPictureListener(listener);
             cameraCapture.startCamera();
-            
+
 
         }
     }
